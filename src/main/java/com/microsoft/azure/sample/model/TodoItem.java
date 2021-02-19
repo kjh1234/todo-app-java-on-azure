@@ -5,12 +5,22 @@
  */
 package com.microsoft.azure.sample.model;
 
-import com.microsoft.azure.spring.data.cosmosdb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-@Document
-public class TodoItem {
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "TodoItem")
+public class TodoItem implements Serializable {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -7708094183305055506L;
+	@Id
     private String id;
     private String description;
     private String owner;
@@ -20,8 +30,8 @@ public class TodoItem {
     }
 
     public TodoItem(String id, String description, String owner) {
-        this.description = description;
         this.id = id;
+        this.description = description;
         this.owner = owner;
         this.finished = false;
     }

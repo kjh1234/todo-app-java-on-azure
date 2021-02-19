@@ -5,10 +5,12 @@
  */
 package com.microsoft.azure.sample.dao;
 
-import com.microsoft.azure.sample.model.TodoItem;
-import com.microsoft.azure.spring.data.cosmosdb.repository.DocumentDbRepository;
-import org.springframework.stereotype.Repository;
+import javax.transaction.Transactional;
 
-@Repository
-public interface TodoItemRepository extends DocumentDbRepository<TodoItem, String> {
+import org.springframework.data.repository.CrudRepository;
+
+import com.microsoft.azure.sample.model.TodoItem;
+
+@Transactional
+public interface TodoItemRepository extends CrudRepository<TodoItem, String> {
 }

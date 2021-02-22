@@ -19,21 +19,16 @@ public class DBInitializeConfig {
 	private DataSource dataSource;
 
 	@PostConstruct
-	public void initialize(){
+	public void initialize() {
 		try {
 			Connection connection = dataSource.getConnection();
 			Statement statement = connection.createStatement();
 			statement.execute("DROP TABLE IF EXISTS todo_item");
-			statement.executeUpdate(
-					"CREATE TABLE todo_item(" +
-					"id varchar(30) Primary key, " +
-					"owner varchar(30) not null," +
-					"description varchar(300))"
-					);
+			statement.executeUpdate("CREATE TABLE todo_item(" + "id varchar(30) Primary key, "
+					+ "owner varchar(30) not null," + "description varchar(300))");
 			statement.close();
 			connection.close();
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}

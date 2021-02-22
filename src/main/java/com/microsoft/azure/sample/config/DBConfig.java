@@ -10,11 +10,11 @@ import org.springframework.core.annotation.Order;
 @Configuration
 @Order(1)
 public class DBConfig {
-    @Bean
+	@Bean
 	public DataSource dataSource() {
-	        DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
-	        dataSourceBuilder.driverClassName("org.sqlite.JDBC");
-	        dataSourceBuilder.url("jdbc:sqlite:mydb.db");
-	        return dataSourceBuilder.build();
+		DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
+		dataSourceBuilder.driverClassName("org.sqlite.JDBC");
+		dataSourceBuilder.url("jdbc:sqlite:mydb.db");
+		return dataSourceBuilder.build();
 	}
 }

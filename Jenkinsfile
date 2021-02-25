@@ -18,7 +18,7 @@ pipeline {
       }
     }
 
-    stage('error') {
+    stage('VMSS_GREEN_DEPLOY') {
       steps {
         build 'AZURE VMSS/03.VMSS_GREEN_DEPLOY'
       }

@@ -18,11 +18,14 @@ pipeline {
       }
     }
 
-    stage('') {
+    stage('error') {
       steps {
         build 'AZURE VMSS/03.VMSS_GREEN_DEPLOY'
       }
     }
 
+  }
+  environment {
+    version = ''
   }
 }

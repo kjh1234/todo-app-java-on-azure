@@ -10,6 +10,7 @@ pipeline {
             isHook = true
           }
           echo env.AZURE_CLIENT_ID
+          echo "isHook : " + isHook
         }
 
       }

@@ -126,10 +126,8 @@ pipeline {
 
       }
       steps {
-        withDockerRegistry([credentialsId: dockerCredentialId, url: "http://${dockerRegistry}"]) {
+        withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID, url: 'http://${dockerRegistry}']) {
             sh """
-                #cd target
-                #cp -f ../deploy/aks/Dockerfile .
                 docker build -t "${env.IMAGE_TAG}" .
                 docker push "${env.IMAGE_TAG}"
             """
@@ -199,7 +197,7 @@ pipeline {
                   configFilePaths: 'deploy/aks/deployment.yml',
                   enableConfigSubstitution: true,
                   secretName: "localhost",
-                  containerRegistryCredentials: [[credentialsId: dockerCredentialId, url: "http://${dockerRegistry}"]]
+                  containerRegistryCredentials: [[credentialsId: DOCKER_CREDENTIALS_ID, url: "http://${dockerRegistry}"]]
       }
     }
 
@@ -262,6 +260,7 @@ pipeline {
     AZURE_TENANT_ID = credentials('AZURE_TENANT_ID')
     AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
     GIT_CREDENTIALS_ID = credentials('GIT_CREDENTIALS_ID')
+    DOCKER_CREDENTIALS_ID = credentials('DOCKER_CREDENTIALS_ID')
     
     KUBERNETES_SECRET_NAME = 'todoapp' 
   }

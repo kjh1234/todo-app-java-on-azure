@@ -24,29 +24,11 @@ pipeline {
         echo ' The SCM'
         script {
           
-          checkout([
-              $class: 'GitSCM', 
-              branches: [[name: "master"]], 
-              doGenerateSubmoduleConfigurations: false, 
-              extensions: [[
-                  $class: 'SubmoduleOption', 
-                  disableSubmodules: false, 
-                  parentCredentials: false, 
-                  recursiveSubmodules: false, 
-                  reference: '', 
-                  trackingSubmodules: false
-              ]], 
-              submoduleCfg: [], 
-              userRemoteConfigs: [[credentialsId: GIT_CREDENTIALS_ID, url: "https://github.com/kjh1234/todo-app-java-on-azure.git"]]
-          ])
-          
           tagVersion = params.TAG_VERSION
           if ((params.ALL_STEPS == true || isHook == false ) && params.TAG_VERSION == '') {
             error "TAG_VERSION is required"
           } else {
             echo 'Tag return github'
-            tagVersion = sh(returnStdout: true, script: "git describe --tags --abbrev=0 | tail -1").trim()
-            echo tagVersion
           }
         }
 

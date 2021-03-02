@@ -26,10 +26,19 @@ pipeline {
       steps {
         echo ' The SCM'
         script {
+          
+          tagVersion = params.TAG_VERSION
+          if ((params.ALL_STEPS == true || isHook == false ) && params.TAG_VERSION == '') {
+            error "TAG_VERSION is required"
+          } else {
+            echo 'Tag return github'
+            tagVersion = sh(returnStdout: true, script: "git describe --tags --abbrev=0 | tail -1").trim()
+            echo tagVersion
+          }
+          
           checkout([
               $class: 'GitSCM', 
-              /*branches: [[name: "refs/tags/${TAG_VERSION}"]],*/
-              branches: [[name: "master"]], 
+              branches: [[name: "refs/tags/${tagVersion}"]],
               doGenerateSubmoduleConfigurations: false, 
               extensions: [[
                   $class: 'SubmoduleOption', 
@@ -42,15 +51,6 @@ pipeline {
               submoduleCfg: [], 
               userRemoteConfigs: [[credentialsId: GIT_CREDENTIALS_ID, url: "https://github.com/kjh1234/todo-app-java-on-azure.git"]]
           ])
-          
-          tagVersion = params.TAG_VERSION
-          if ((params.ALL_STEPS == true || isHook == false ) && params.TAG_VERSION == '') {
-            error "TAG_VERSION is required"
-          } else {
-            echo 'Tag return github'
-            tagVersion = sh(returnStdout: true, script: "git describe --tags --abbrev=0 | tail -1").trim()
-            echo tagVersion
-          }
         }
 
       }

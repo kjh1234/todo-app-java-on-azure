@@ -1,3 +1,5 @@
+def isHook = params.IS_HOOK
+def tagVersion = ''
 pipeline {
   agent any
   stages {
@@ -24,11 +26,13 @@ pipeline {
         echo ' The SCM'
         script {
           
-          def tagVersion = params.TAG_VERSION
+          /*def tagVersion = params.TAG_VERSION*/
           if ((params.ALL_STEPS == true || isHook == false ) && params.TAG_VERSION == '') {
             error "TAG_VERSION is required"
           } else {
             echo 'Tag return github'
+            /*tagVersion = sh(returnStdout: true, script: "git describe --tags --abbrev=0 | tail -1").trim()
+            echo tagVersion*/
           }
         }
 

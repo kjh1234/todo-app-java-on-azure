@@ -7,6 +7,7 @@ def resourceGroup = 'aks-bg-test'
 def aks = 'aks-bg-cluster'
 
 def dockerRegistry = 'innoregi.azurecr.io'
+def dockerRegistryUrl = 'http://innoregi.azurecr.io'
 def imageName = "todo-app"
 env.IMAGE_TAG = "${dockerRegistry}/${imageName}:${TAG_VERSION}"
 def dockerCredentialId = 'azuer-docker-registry'
@@ -126,7 +127,7 @@ pipeline {
 
       }
       steps {
-        withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID, url: 'http://${dockerRegistry}']) {
+        withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID, url: dockerRegistryUrl]) {
             sh """
                 docker build -t "${env.IMAGE_TAG}" .
                 docker push "${env.IMAGE_TAG}"
@@ -197,7 +198,7 @@ pipeline {
                   configFilePaths: 'deploy/aks/deployment.yml',
                   enableConfigSubstitution: true,
                   secretName: "localhost",
-                  containerRegistryCredentials: [[credentialsId: DOCKER_CREDENTIALS_ID, url: "http://${dockerRegistry}"]]
+                  containerRegistryCredentials: [[credentialsId: DOCKER_CREDENTIALS_ID, url: dockerRegistryUrl]]
       }
     }
 

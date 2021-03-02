@@ -34,7 +34,6 @@ pipeline {
                 error "TAG_VERSION is required"
             } else {
                 echo 'Tag return github'
-                TAG_VERSION=$(git describe --tags --abbrev=0)
                 sh """
                   last_version="\$(git describe --tags --abbrev=0)"
                   echo "\$last_version" >last_version

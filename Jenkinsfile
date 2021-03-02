@@ -24,7 +24,7 @@ pipeline {
         echo ' The SCM'
         script {
           
-          tagVersion = params.TAG_VERSION
+          def tagVersion = params.TAG_VERSION
           if ((params.ALL_STEPS == true || isHook == false ) && params.TAG_VERSION == '') {
             error "TAG_VERSION is required"
           } else {

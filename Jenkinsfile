@@ -31,8 +31,8 @@ pipeline {
             error "TAG_VERSION is required"
           } else {
             echo 'Tag return github'
-            /*tagVersion = sh(returnStdout: true, script: "git describe --tags --abbrev=0 | tail -1").trim()
-            echo tagVersion*/
+            tagVersion = sh(returnStdout: true, script: "git describe --tags --abbrev=0 | tail -1").trim()
+            echo tagVersion
           }
         }
 

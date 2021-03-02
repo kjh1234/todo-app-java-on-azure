@@ -1,5 +1,10 @@
 pipeline {
   agent any
+  parameters {
+    booleanParam(name: 'ALL_STEPS', defaultValue: false, description: '')
+    booleanParam(name: 'IS_HOOK', defaultValue: false, description: '')
+    string(name: 'TAG_VERSION', defaultValue: '', description: '')
+  }
   stages {
     stage('INIT_PIPILINE') {
       steps {

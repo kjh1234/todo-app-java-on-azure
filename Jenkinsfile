@@ -7,6 +7,7 @@ pipeline {
           if (params.ALL_STEPS == true) {
             isHook = true
           }
+          echo env.AZURE_CLIENT_ID
         }
 
       }
@@ -88,7 +89,11 @@ pipeline {
 
   }
   environment {
-    version = '1'
+    AZURE_CLIENT_ID = credentials('AZURE_CLIENT_ID')
+    AZURE_CLIENT_SECRET = credentials('AZURE_CLIENT_SECRET')
+    AZURE_TENANT_ID = credentials('AZURE_TENANT_ID')
+    AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
+    GIT_CREDENTIALS_ID = credentials('GIT_CREDENTIALS_ID')
   }
   parameters {
     booleanParam(name: 'ALL_STEPS', defaultValue: false, description: '')

@@ -118,7 +118,7 @@ pipeline {
       }
     }
 
-    stage('Create/Push Docker Image') {
+    stage('Create Docker Image') {
       when {
         expression {
           return params.ALL_STEPS == true || isHook == true

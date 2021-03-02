@@ -8,7 +8,7 @@ pipeline {
     string(name: 'TAG_VERSION', defaultValue: '', description: '')
   }
   
-  stages {
+  node('master') {
 
     stage('INIT_PIPILINE') {
       steps {
@@ -29,10 +29,17 @@ pipeline {
         echo " The SCM"
         
         script {
-            if (params.ALL_STEPS == true && params.TAG_VERSION == '') {
+            tagVersion = params.TAG_VERSION
+            if ((params.ALL_STEPS == true || isHook == false ) && params.TAG_VERSION == '') {
                 error "TAG_VERSION is required"
             } else {
                 echo 'Tag return github'
+                TAG_VERSION=$(git describe --tags --abbrev=0)
+                sh """
+                  last_version="\$(git describe --tags --abbrev=0)"
+                  echo "\$last_version" >last_version
+                """
+              tagVersion =  readFile('last_version').trim()
             }
         }
        /*currentBuild.result = 'SUCCESS'

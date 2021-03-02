@@ -1,5 +1,40 @@
 def isHook = params.IS_HOOK
 def tagVersion = ''
+
+def servicePrincipalId = 'aks-service-principal'
+
+def resourceGroup = 'aks-bg-test'
+def aks = 'aks-bg-cluster'
+
+def dockerRegistry = 'innoregi.azurecr.io'
+def imageName = "todo-app"
+env.IMAGE_TAG = "${dockerRegistry}/${imageName}:${TAG_VERSION}"
+def dockerCredentialId = 'azuer-docker-registry'
+
+def currentEnvironment = 'blue'
+def newEnvironment = { ->
+    currentEnvironment == 'blue' ? 'green' : 'blue'
+}
+
+def verifyEnvironment = { service ->
+    sh """
+      endpoint_ip="\$(kubectl --kubeconfig=kubeconfig get services '${service}' --output json | jq -r '.status.loadBalancer.ingress[0].ip')"
+      count=0
+      while true; do
+          count=\$(expr \$count + 1)
+          if curl -m 10 "http://\$endpoint_ip"; then
+              break;
+          fi
+          if [ "\$count" -gt 30 ]; then
+              echo 'Timeout while waiting for the ${service} endpoint to be ready'
+              exit 1
+          fi
+          echo "${service} endpoint is not ready, wait 10 seconds..."
+          sleep 10
+      done
+    """
+}
+
 pipeline {
   agent any
   stages {
@@ -79,11 +114,11 @@ pipeline {
 
       }
       steps {
-        echo ' The BUILD'
+        sh ./mvnw clean package -Dmaven.test.skip=true
       }
     }
 
-    stage('PUSH IMAGE') {
+    stage('Create/Push Docker Image') {
       when {
         expression {
           return params.ALL_STEPS == true || isHook == true
@@ -91,11 +126,63 @@ pipeline {
 
       }
       steps {
-        echo ' PUSH IMAGE'
+        withDockerRegistry([credentialsId: dockerCredentialId, url: "http://${dockerRegistry}"]) {
+            sh """
+                #cd target
+                #cp -f ../deploy/aks/Dockerfile .
+                docker build -t "${env.IMAGE_TAG}" .
+                docker push "${env.IMAGE_TAG}"
+            """
+        }
       }
     }
 
-    stage('DEPLOY') {
+    stage('Check Env') {
+      when {
+        expression {
+          return params.ALL_STEPS == true || isHook == true
+        }
+
+      }
+      steps {
+        // check the current active environment to determine the inactive one that will be deployed to
+
+        withCredentials([azureServicePrincipal(servicePrincipalId)]) {
+            // fetch the current service configuration
+            sh """
+              az login --service-principal -u "\$AZURE_CLIENT_ID" -p "\$AZURE_CLIENT_SECRET" -t "\$AZURE_TENANT_ID"
+              az account set --subscription "\$AZURE_SUBSCRIPTION_ID"
+              az aks get-credentials --resource-group "${resourceGroup}" --name "${aks}" --admin --file kubeconfig
+              az logout
+              current_role="\$(kubectl --kubeconfig kubeconfig get services todoapp-service --output json | jq -r .spec.selector.role)"
+              if [ "\$current_role" = null ]; then
+                  echo "Unable to determine current environment"
+                  exit 1
+              fi
+              echo "\$current_role" >current-environment
+            """
+        }
+
+        // parse the current active backend
+        currentEnvironment = readFile('current-environment').trim()
+
+        // set the build name
+        echo "***************************  CURRENT: $currentEnvironment     NEW: ${newEnvironment()}  *****************************"
+        currentBuild.displayName = newEnvironment().toUpperCase() + ' ' + imageName
+
+        env.TARGET_ROLE = newEnvironment()
+
+        // clean the inactive environment
+        sh """
+        isDeployment="\$(kubectl --kubeconfig kubeconfig get deployments todoapp-deployment-\$TARGET_ROLE | wc -l)"
+        if [ \$isDeployment -gt 0 ]; then
+            kubectl --kubeconfig=kubeconfig delete deployment "todoapp-deployment-\$TARGET_ROLE"
+        fi
+        """
+      }
+    }
+
+    stage('DEPLOY Staged') {
       when {
         expression {
           return params.ALL_STEPS == true || isHook == false
@@ -103,11 +190,20 @@ pipeline {
 
       }
       steps {
-        echo ' DEPLOY'
+        // Apply the deployments to AKS.
+        // With enableConfigSubstitution set to true, the variables ${TARGET_ROLE}, ${IMAGE_TAG}, ${KUBERNETES_SECRET_NAME}
+        // will be replaced with environment variable values
+        acsDeploy azureCredentialsId: servicePrincipalId,
+                  resourceGroupName: resourceGroup,
+                  containerService: "${aks} | AKS",
+                  configFilePaths: 'deploy/aks/deployment.yml',
+                  enableConfigSubstitution: true,
+                  secretName: "localhost",
+                  containerRegistryCredentials: [[credentialsId: dockerCredentialId, url: "http://${dockerRegistry}"]]
       }
     }
 
-    stage('Blue/Green Swich') {
+    stage('Verify Staged') {
       when {
         expression {
           return params.ALL_STEPS == true || isHook == false
@@ -115,8 +211,48 @@ pipeline {
 
       }
       steps {
-        echo ' Blue/Green Swich'
+        // verify the production environment is working properly
+        verifyEnvironment("todoapp-test-${newEnvironment()}")
       }
+    }
+
+    stage('Prod Switch') {
+      when {
+        expression {
+          return params.ALL_STEPS == true || isHook == false
+        }
+
+      }
+      steps {
+        input("Switch Prod Proceed or Abort?")
+        // Update the production service endpoint to route to the new environment.
+        // With enableConfigSubstitution set to true, the variables ${TARGET_ROLE}
+        // will be replaced with environment variable values
+        acsDeploy azureCredentialsId: servicePrincipalId,
+                  resourceGroupName: resourceGroup,
+                  containerService: "${aks} | AKS",
+                  configFilePaths: 'deploy/aks/service.yml',
+                  enableConfigSubstitution: true
+      }
+    }
+
+    stage('Verify Prod') {
+      when {
+        expression {
+          return params.ALL_STEPS == true || isHook == false
+        }
+
+      }
+      steps {
+        // verify the production environment is working properly
+        verifyEnvironment('todoapp-service')
+      }
+    }
+
+    stage('Post-clean') {
+        sh '''
+          rm -f kubeconfig
+        '''
     }
 
   }
@@ -126,6 +262,8 @@ pipeline {
     AZURE_TENANT_ID = credentials('AZURE_TENANT_ID')
     AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
     GIT_CREDENTIALS_ID = credentials('GIT_CREDENTIALS_ID')
+    
+    KUBERNETES_SECRET_NAME = 'todoapp' 
   }
   parameters {
     booleanParam(name: 'ALL_STEPS', defaultValue: false, description: '')

@@ -8,7 +8,7 @@ pipeline {
     string(name: 'TAG_VERSION', defaultValue: '', description: '')
   }
   
-  node('master') {
+  stages {
     stage('INIT_PIPILINE') {
       steps {
 

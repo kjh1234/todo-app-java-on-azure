@@ -9,7 +9,6 @@ def aks = 'aks-bg-cluster'
 def dockerRegistry = 'innoregi.azurecr.io'
 def dockerRegistryUrl = 'http://innoregi.azurecr.io'
 def imageName = "todo-app"
-env.IMAGE_TAG = "${dockerRegistry}/${imageName}:${TAG_VERSION}"
 def dockerCredentialId = 'azuer-docker-registry'
 
 def currentEnvironment = 'blue'
@@ -47,6 +46,7 @@ pipeline {
           }
           echo env.AZURE_CLIENT_ID
           echo "isHook : " + isHook
+          env.IMAGE_TAG = "${dockerRegistry}/${imageName}:${params.TAG_VERSION}"
         }
 
       }
@@ -102,6 +102,7 @@ pipeline {
               submoduleCfg: [], 
               userRemoteConfigs: [[credentialsId: GIT_CREDENTIALS_ID, url: "https://github.com/kjh1234/todo-app-java-on-azure.git"]]
           ])
+          env.IMAGE_TAG = "${dockerRegistry}/${imageName}:${tagVersion}"
         }
 
       }
@@ -141,7 +142,7 @@ pipeline {
     stage('Check Env') {
       when {
         expression {
-          return params.ALL_STEPS == true || isHook == true
+          return params.ALL_STEPS == true || isHook == false
         }
 
       }
@@ -164,15 +165,16 @@ pipeline {
             """
         }
 
-        // parse the current active backend
-        currentEnvironment = readFile('current-environment').trim()
+        script {
+            // parse the current active backend
+            currentEnvironment = readFile('current-environment').trim()
 
-        // set the build name
-        echo "***************************  CURRENT: $currentEnvironment     NEW: ${newEnvironment()}  *****************************"
-        currentBuild.displayName = newEnvironment().toUpperCase() + ' ' + imageName
+            // set the build name
+            echo "***************************  CURRENT: $currentEnvironment     NEW: ${newEnvironment()}  *****************************"
+            currentBuild.displayName = newEnvironment().toUpperCase() + ' ' + imageName
 
-        env.TARGET_ROLE = newEnvironment()
-
+            env.TARGET_ROLE = newEnvironment()
+        }
         // clean the inactive environment
         sh """
         isDeployment="\$(kubectl --kubeconfig kubeconfig get deployments todoapp-deployment-\$TARGET_ROLE | wc -l)"
@@ -191,16 +193,18 @@ pipeline {
 
       }
       steps {
+        script {
         // Apply the deployments to AKS.
         // With enableConfigSubstitution set to true, the variables ${TARGET_ROLE}, ${IMAGE_TAG}, ${KUBERNETES_SECRET_NAME}
         // will be replaced with environment variable values
-        acsDeploy azureCredentialsId: servicePrincipalId,
-                  resourceGroupName: resourceGroup,
-                  containerService: "${aks} | AKS",
-                  configFilePaths: 'deploy/aks/deployment.yml',
-                  enableConfigSubstitution: true,
-                  secretName: "localhost",
-                  containerRegistryCredentials: [[credentialsId: DOCKER_CREDENTIALS_ID, url: dockerRegistryUrl]]
+            acsDeploy azureCredentialsId: servicePrincipalId,
+                      resourceGroupName: resourceGroup,
+                      containerService: "${aks} | AKS",
+                      configFilePaths: 'deploy/aks/deployment.yml',
+                      enableConfigSubstitution: true,
+                      secretName: "localhost",
+                      containerRegistryCredentials: [[credentialsId: DOCKER_CREDENTIALS_ID, url: dockerRegistryUrl]]
+        }
       }
     }
 
@@ -213,7 +217,9 @@ pipeline {
       }
       steps {
         // verify the production environment is working properly
-        verifyEnvironment("todoapp-test-${newEnvironment()}")
+        script {
+            verifyEnvironment("todoapp-test-${newEnvironment()}")
+        }
       }
     }
 
@@ -226,14 +232,16 @@ pipeline {
       }
       steps {
         input("Switch Prod Proceed or Abort?")
+        script {
         // Update the production service endpoint to route to the new environment.
         // With enableConfigSubstitution set to true, the variables ${TARGET_ROLE}
         // will be replaced with environment variable values
-        acsDeploy azureCredentialsId: servicePrincipalId,
-                  resourceGroupName: resourceGroup,
-                  containerService: "${aks} | AKS",
-                  configFilePaths: 'deploy/aks/service.yml',
-                  enableConfigSubstitution: true
+            acsDeploy azureCredentialsId: servicePrincipalId,
+                      resourceGroupName: resourceGroup,
+                      containerService: "${aks} | AKS",
+                      configFilePaths: 'deploy/aks/service.yml',
+                      enableConfigSubstitution: true
+        }
       }
     }
 
@@ -245,15 +253,19 @@ pipeline {
 
       }
       steps {
-        // verify the production environment is working properly
-        verifyEnvironment('todoapp-service')
+        script { 
+            // verify the production environment is working properly
+            verifyEnvironment('todoapp-service')
+        }
       }
     }
 
     stage('Post-clean') {
+      steps {
         sh '''
           rm -f kubeconfig
         '''
+      }
     }
 
   }
@@ -263,7 +275,7 @@ pipeline {
     AZURE_TENANT_ID = credentials('AZURE_TENANT_ID')
     AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
     GIT_CREDENTIALS_ID = credentials('GIT_CREDENTIALS_ID')
-    DOCKER_CREDENTIALS_ID = credentials('DOCKER_CREDENTIALS_ID')
+    DOCKER_CREDENTIALS_ID = 'DOCKER_CREDENTIALS_ID'
     
     KUBERNETES_SECRET_NAME = 'todoapp' 
   }

@@ -115,7 +115,9 @@ pipeline {
 
       }
       steps {
-        sh ./mvnw clean package -Dmaven.test.skip=true
+        sh """
+            sh ./mvnw clean package -Dmaven.test.skip=true
+        """
       }
     }
 

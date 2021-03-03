@@ -1,9 +1,8 @@
 pipeline {
   agent any
   stages {
-    stage('Checkout') {
+    stage('Test') {
       steps {
-        checkout scm
         sh 'echo \'hi\''
       }
     }
@@ -11,5 +10,10 @@ pipeline {
   }
   parameters {
     string(name: 'TAG_VERSION', defaultValue: '', description: '')
+  }
+  environment {
+    GIT_REPOSITORY_URL = "https://github.com/xxxx/xxxx-backend.git"
+    GIT_CREDENTIALS_ID = "XXX-GIT-CREDENTIAL"
+    GIT_BRANCH = "*/master"
   }
 }

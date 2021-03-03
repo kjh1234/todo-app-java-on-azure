@@ -3,6 +3,7 @@ pipeline {
   stages {
     stage('') {
       steps {
+        checkout scm
         sh 'echo \'hi\''
       }
     }

@@ -12,7 +12,7 @@ pipeline {
     GIT_REPOSITORY_URL = 'https://github.com/kjh1234/todo-app-java-on-azure.git'
     GIT_CREDENTIALS_ID = '	GIT_CREDENTIALS_ID'
     GIT_BRANCH = '*/master'
-    GIT_SCM = [$class: 'GitSCM', userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], branches: [[name: GIT_BRANCH]]]]
+    GIT_SCM = [$class: 'GitSCM', userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], branches: [[name: GIT_BRANCH]]]
   }
   parameters {
     string(name: 'TAG_VERSION', defaultValue: '', description: '')

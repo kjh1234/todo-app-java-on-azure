@@ -50,7 +50,6 @@ pipeline {
       DEPLOY_FTP_ACC = credentials('DEPLOY_FTP_ACC')
       DOCKER_URL = 'http://innoregi.azurecr.io'
       DOCKER_ACC = credentials('azuer-docker-registry')
-      aaa = '${credentials(\'azuer-docker-registry\')}'
     }
     parameters {
       string(name: 'TAG_VERSION', defaultValue: '', description: '')

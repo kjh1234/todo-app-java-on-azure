@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('') {
       steps {
-        git 'GIT_REPOSITORY_URL'
+        git GIT_REPOSITORY_URL
       }
     }
 

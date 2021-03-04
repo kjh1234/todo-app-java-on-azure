@@ -13,7 +13,7 @@ pipeline {
 
       stage('Build') {
         steps {
-          #sh 'mvn -Dmaven.test.failure.ignore=true clean install package'
+          /* sh 'mvn -Dmaven.test.failure.ignore=true clean install package' */
         }
       }
 
@@ -25,16 +25,15 @@ pipeline {
 
       stage('Deploy') {
         steps {
-          sh '''#ftp -n -v ${DEPLOY_ADDRESS} << EOF
+          sh '''
+#ftp -n -v ${DEPLOY_ADDRESS} << EOF
 #user ${DEPLOY_FTP_ACC_USR} ${DEPLOY_FTP_ACC_PSW}
 #cd /data/was
 #bin
 #lcd ${workspace}/target
 #put deploy.jar deploy.jar
-#EOF'''
-          sh '''echo ${DEPLOY_ADDRESS}
-echo ${DEPLOY_FTP_ACC_USR}
-echo ${DEPLOY_FTP_ACC_PSW}'''
+#EOF
+'''
         }
       }
 

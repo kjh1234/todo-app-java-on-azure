@@ -4,20 +4,26 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout([
-          $class: 'GitSCM', 
-          userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
-          branches: [[name: GIT_BRANCH]]
-        ])
+                    $class: 'GitSCM', 
+                    userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
+                    branches: [[name: GIT_BRANCH]]
+                  ])
+        }
       }
-    }
 
+      stage('Build') {
+        steps {
+          sh 'mvn -Dmaven.test.failure.ignore=true clean package'
+        }
+      }
+
+    }
+    environment {
+      GIT_REPOSITORY_URL = 'https://github.com/kjh1234/todo-app-java-on-azure.git'
+      GIT_CREDENTIALS_ID = '	GIT_CREDENTIALS_ID'
+      GIT_BRANCH = '*/master'
+    }
+    parameters {
+      string(name: 'TAG_VERSION', defaultValue: '', description: '')
+    }
   }
-  environment {
-    GIT_REPOSITORY_URL = 'https://github.com/kjh1234/todo-app-java-on-azure.git'
-    GIT_CREDENTIALS_ID = '	GIT_CREDENTIALS_ID'
-    GIT_BRANCH = '*/master'
-  }
-  parameters {
-    string(name: 'TAG_VERSION', defaultValue: '', description: '')
-  }
-}

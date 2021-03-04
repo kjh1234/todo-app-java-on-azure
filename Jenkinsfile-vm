@@ -3,39 +3,41 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        /* git GIT_REPOSITORY_URL */
-        
-        /* 동일 레파지토리일 경우
-        /* checkout scm */
-        
-        /* 다른 레파지토리일 경우 */
         checkout([
-          $class: 'GitSCM', 
-          userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
-          branches: [[name: GIT_BRANCH]]
-        ])
+                    $class: 'GitSCM', 
+                    userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
+                    branches: [[name: GIT_BRANCH]]
+                  ])
+        }
       }
-    }
 
-    stage('Build') {
-      steps {
-        sh 'mvn -Dmaven.test.failure.ignore=true clean install package'
+      stage('Build') {
+        steps {
+          sh 'mvn -Dmaven.test.failure.ignore=true clean install package'
+        }
       }
-    }
 
-    stage('Deploy') {
-      steps {
-        echo 'test'
+      stage('Deploy') {
+        steps {
+          echo 'test'
+          sh '''ftp -n -v ${DEPLOY_ADDRESS} << EOF
+user $id $passwd
+cd /data/was
+bin
+
+lcd ${workspace}/target
+put deploy.jar deploy.jar
+EOF'''
+        }
       }
-    }
 
+    }
+    environment {
+      GIT_REPOSITORY_URL = 'https://github.com/kjh1234/todo-app-java-on-azure.git'
+      GIT_CREDENTIALS_ID = '	GIT_CREDENTIALS_ID'
+      GIT_BRANCH = '*/master'
+    }
+    parameters {
+      string(name: 'TAG_VERSION', defaultValue: '', description: '')
+    }
   }
-  environment {
-    GIT_REPOSITORY_URL = 'https://github.com/kjh1234/todo-app-java-on-azure.git'
-    GIT_CREDENTIALS_ID = '	GIT_CREDENTIALS_ID'
-    GIT_BRANCH = '*/master'
-  }
-  parameters {
-    string(name: 'TAG_VERSION', defaultValue: '', description: '')
-  }
-}

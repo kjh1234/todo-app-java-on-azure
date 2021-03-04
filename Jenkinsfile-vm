@@ -3,7 +3,17 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git GIT_REPOSITORY_URL
+        /* git GIT_REPOSITORY_URL */
+        
+        /* 동일 레파지토리일 경우
+        /* checkout scm */
+        
+        /* 다른 레파지토리일 경우 */
+        checkout([
+          $class: 'GitSCM', 
+          userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
+          branches: [[name: GIT_BRANCH]]
+        ])
       }
     }
 

@@ -2,12 +2,31 @@ pipeline {
   agent any
   stages {
     stage('Checkout') {
-      steps {
-        checkout([
-                                                            $class: 'GitSCM', 
-                                                            userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
-                                                            branches: [[name: GIT_BRANCH]]
-                                                          ])
+      parallel {
+        stage('Checkout') {
+          steps {
+            checkout([
+                                                                          $class: 'GitSCM', 
+                                                                          userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
+                                                                          branches: [[name: GIT_BRANCH]]
+                                                                        ])
+              cleanWs()
+            }
+          }
+
+          stage('') {
+            steps {
+              script {
+                ftpPublisher alwaysPublishFromMaster: true, continueOnError: false, failOnError: false, publishers: [
+                  [configName: 'YOUR_CONFIG_HERE', transfers: [
+                    [asciiMode: false, cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "YOUR_DIRECTORY_HERE", remoteDirectorySDF: false, removePrefix: '', sourceFiles: '**.exe, **.txt']
+                  ], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]
+                ]
+              }
+
+            }
+          }
+
         }
       }
 

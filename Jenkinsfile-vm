@@ -4,10 +4,10 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout([
-                              $class: 'GitSCM', 
-                              userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
-                              branches: [[name: GIT_BRANCH]]
-                            ])
+                                        $class: 'GitSCM', 
+                                        userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
+                                        branches: [[name: GIT_BRANCH]]
+                                      ])
         }
       }
 
@@ -19,7 +19,7 @@ pipeline {
 
       stage('Deploy') {
         steps {
-          echo 'test'
+          echo '${DEPLOY_ADDRESS}'
           sh '''#ftp -n -v ${DEPLOY_ADDRESS} << EOF
 #user ${DEPLOY_FTP_ACC_USR} ${DEPLOY_FTP_ACC_PSW}
 #cd /data/was
@@ -27,6 +27,8 @@ pipeline {
 #lcd ${workspace}/target
 #put deploy.jar deploy.jar
 #EOF'''
+          sh '''echo ${DEPLOY_FTP_ACC_USR}
+echo ${DEPLOY_FTP_ACC_PSW}'''
         }
       }
 
@@ -35,7 +37,6 @@ pipeline {
       GIT_REPOSITORY_URL = 'https://github.com/kjh1234/todo-app-java-on-azure.git'
       GIT_CREDENTIALS_ID = '	GIT_CREDENTIALS_ID'
       GIT_BRANCH = '*/master'
-      
       DEPLOY_ADDRESS = 'localhost'
       DEPLOY_FTP_ACC = credentials('DEPLOY_FTP_ACC')
     }

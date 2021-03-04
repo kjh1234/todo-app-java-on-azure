@@ -4,10 +4,10 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout([
-                    $class: 'GitSCM', 
-                    userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
-                    branches: [[name: GIT_BRANCH]]
-                  ])
+                              $class: 'GitSCM', 
+                              userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
+                              branches: [[name: GIT_BRANCH]]
+                            ])
         }
       }
 
@@ -20,14 +20,13 @@ pipeline {
       stage('Deploy') {
         steps {
           echo 'test'
-          sh '''ftp -n -v ${DEPLOY_ADDRESS} << EOF
-user $id $passwd
-cd /data/was
-bin
-
-lcd ${workspace}/target
-put deploy.jar deploy.jar
-EOF'''
+          sh '''#ftp -n -v ${DEPLOY_ADDRESS} << EOF
+#user ${DEPLOY_FTP_ID} ${DEPLOY_FTP_PW}
+#cd /data/was
+#bin
+#lcd ${workspace}/target
+#put deploy.jar deploy.jar
+#EOF'''
         }
       }
 

@@ -19,7 +19,9 @@ pipeline {
 
       stage('docker test login') {
         steps {
-          sh echo "${DOCKER_ACC_PSW}" | docker login --username ${DOCKER_ACC_USR} --password-stdin ${DOCKER_URL}
+          sh '''
+          echo "${DOCKER_ACC_PSW}" | docker login --username ${DOCKER_ACC_USR} --password-stdin ${DOCKER_URL}
+          '''
         }
       }
 

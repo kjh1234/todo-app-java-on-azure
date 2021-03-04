@@ -13,7 +13,13 @@ pipeline {
 
       stage('Build') {
         steps {
-          sh 'mvn -Dmaven.test.failure.ignore=true clean install package'
+          #sh 'mvn -Dmaven.test.failure.ignore=true clean install package'
+        }
+      }
+
+      stage('docker test login') {
+        steps {
+          sh docker -u ${DOCKER_ACC_USR} -p ${DOCKER_ACC_PSW} ${DOCKER_URL}
         }
       }
 
@@ -39,6 +45,9 @@ echo ${DEPLOY_FTP_ACC_PSW}'''
       GIT_BRANCH = '*/master'
       DEPLOY_ADDRESS = 'localhost'
       DEPLOY_FTP_ACC = credentials('DEPLOY_FTP_ACC')
+      DOCKER_URL = 'http://innoregi.azurecr.io'
+      DOCKER_ACC = credentials('azuer-docker-registry')
+      
     }
     parameters {
       string(name: 'TAG_VERSION', defaultValue: '', description: '')

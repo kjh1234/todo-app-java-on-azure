@@ -4,19 +4,18 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout([
-                                                  $class: 'GitSCM', 
-                                                  userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
-                                                  branches: [[name: GIT_BRANCH]]
-                                                ])
+                                                            $class: 'GitSCM', 
+                                                            userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
+                                                            branches: [[name: GIT_BRANCH]]
+                                                          ])
         }
       }
 
       stage('Build') {
         steps {
           sh '''
-          echo 'mvn'
+          echo \'mvn\'
           '''
-          /* sh 'mvn -Dmaven.test.failure.ignore=true clean install package' */
         }
       }
 
@@ -51,7 +50,7 @@ pipeline {
       DEPLOY_FTP_ACC = credentials('DEPLOY_FTP_ACC')
       DOCKER_URL = 'http://innoregi.azurecr.io'
       DOCKER_ACC = credentials('azuer-docker-registry')
-      
+      aaa = '${credentials(\'azuer-docker-registry\')}'
     }
     parameters {
       string(name: 'TAG_VERSION', defaultValue: '', description: '')

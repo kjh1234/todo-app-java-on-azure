@@ -44,7 +44,7 @@ pipeline {
     }
     environment {
       GIT_REPOSITORY_URL = 'https://github.com/kjh1234/todo-app-java-on-azure.git'
-      GIT_CREDENTIALS_ID = '	GIT_CREDENTIALS_ID'
+      GIT_CREDENTIALS_ID = 'GIT_CREDENTIALS_ID'
       GIT_BRANCH = '*/master'
       DEPLOY_ADDRESS = 'localhost'
       DEPLOY_FTP_ACC = credentials('DEPLOY_FTP_ACC')

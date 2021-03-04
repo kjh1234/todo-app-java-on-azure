@@ -13,7 +13,9 @@ pipeline {
 
       stage('Build') {
         steps {
-          sh echo 'mvn'
+          sh '''
+          echo 'mvn'
+          '''
           /* sh 'mvn -Dmaven.test.failure.ignore=true clean install package' */
         }
       }

@@ -21,7 +21,7 @@ pipeline {
         steps {
           echo 'test'
           sh '''#ftp -n -v ${DEPLOY_ADDRESS} << EOF
-#user ${DEPLOY_FTP_ID} ${DEPLOY_FTP_PW}
+#user ${DEPLOY_FTP_ACC_USR} ${DEPLOY_FTP_ACC_PSW}
 #cd /data/was
 #bin
 #lcd ${workspace}/target
@@ -37,6 +37,7 @@ pipeline {
       GIT_BRANCH = '*/master'
       
       DEPLOY_ADDRESS = 'localhost'
+      DEPLOY_FTP_ACC = credentials('DEPLOY_FTP_ACC')
     }
     parameters {
       string(name: 'TAG_VERSION', defaultValue: '', description: '')

@@ -1,17 +1,13 @@
+@Library('jenkins-shared-library-examples/vars/example1') _
+
 pipeline {
   agent any
   stages {
       stage('lib-call') {
         steps {
-          sh '''
-#ftp -n -v ${DEPLOY_ADDRESS} << EOF
-#user ${DEPLOY_FTP_ACC_USR} ${DEPLOY_FTP_ACC_PSW}
-#cd /data/was
-#bin
-#lcd ${workspace}/target
-#put deploy.jar deploy.jar
-#EOF
-'''
+          script {
+            example1 "Bob"
+          }
         }
       }
 

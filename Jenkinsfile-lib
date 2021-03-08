@@ -14,7 +14,7 @@ pipeline {
       stage('lib-call') {
         steps {
           script {
-            example1 "Bob"
+            example1 org.example.Constants.EMAIL_MESSAGE 
           }
         }
       }

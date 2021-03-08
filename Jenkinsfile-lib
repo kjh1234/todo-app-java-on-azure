@@ -1,4 +1,4 @@
-@Library('jenkins-shared-library-examples/vars/example1') _
+@Library('example1') _
 
 pipeline {
   agent any

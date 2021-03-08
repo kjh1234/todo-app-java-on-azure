@@ -4,10 +4,10 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout([
-                                                                                    $class: 'GitSCM', 
-                                                                                    userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
-                                                                                    branches: [[name: GIT_BRANCH]]
-                                                                                  ])
+                                                                                              $class: 'GitSCM', 
+                                                                                              userRemoteConfigs: [[url: GIT_REPOSITORY_URL, credentialsId: GIT_CREDENTIALS_ID ]], 
+                                                                                              branches: [[name: GIT_BRANCH]]
+                                                                                            ])
           cleanWs()
           script {
             checkout([
@@ -21,10 +21,21 @@ pipeline {
       }
 
       stage('Build') {
-        steps {
-          sh '''
+        parallel {
+          stage('Build') {
+            steps {
+              sh '''
           echo \'mvn\'
           '''
+            }
+          }
+
+          stage('') {
+            steps {
+              build '04.VMSS_BG_SWITCH'
+            }
+          }
+
         }
       }
 

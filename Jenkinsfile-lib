@@ -1,6 +1,14 @@
 pipeline {
   agent any
   stages {
+    stage('Checkout') {
+      steps {
+          script {
+            checkout scm
+          }
+
+        }
+      }
       stage('lib-call') {
         steps {
           script {

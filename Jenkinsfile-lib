@@ -1,5 +1,3 @@
-@Library('jenkins-shared-library-examples/example1') _
-
 pipeline {
   agent any
   stages {

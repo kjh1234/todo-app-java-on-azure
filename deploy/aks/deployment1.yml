@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: todoapp-container
-        image: 52.141.3.188:5000/todo-app:1.0.0
+        image: docker-registry-login/todo-app:1.0.0
         ports:
         - containerPort: 8080
         readinessProbe:
